@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "optparse"
+require_relative "../lib/open_themes"
+
+formats = {
+  "css" => OpenThemes::Exporters::Css,
+  "json" => OpenThemes::Exporters::Json
+}
+
+options = {
+  format: "css",
+  output: nil
+}
+
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: bin/generate THEME [VARIANT] [options]"
+  opts.on("-f", "--format FORMAT", formats.keys, "Output format (#{formats.keys.join(", ")})") do |format|
+    options[:format] = format
+  end
+  opts.on("-o", "--output PATH", "Write to file instead of stdout") do |path|
+    options[:output] = path
+  end
+  opts.on("-h", "--help", "Show this help") do
+    puts opts
+    exit
+  end
+end
+
+parser.parse!
+
+theme_id = ARGV.shift
+variant = ARGV.shift
+
+if theme_id.nil?
+  warn parser
+  exit 1
+end
+
+begin
+  theme = OpenThemes.find(theme_id, variant: variant)
+rescue OpenThemes::Catalog::NotFound => e
+  warn e.message
+  exit 1
+end
+
+output = formats.fetch(options[:format]).export(theme)
+
+if options[:output]
+  File.write(options[:output], output)
+else
+  print output
+end

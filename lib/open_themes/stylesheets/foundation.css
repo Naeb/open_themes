@@ -1,0 +1,72 @@
+/* OpenThemes foundation — structural tokens (theme-agnostic).
+   Import after a theme stylesheet. Components and app CSS should prefer these. */
+
+:root {
+  /* Typography */
+  --ot-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ot-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --ot-text-xs: 0.75rem;
+  --ot-text-sm: 0.875rem;
+  --ot-text-md: 1rem;
+  --ot-text-lg: 1.125rem;
+  --ot-text-xl: 1.25rem;
+  --ot-text-2xl: 1.5rem;
+  --ot-leading-tight: 1.25;
+  --ot-leading-normal: 1.5;
+  --ot-leading-relaxed: 1.65;
+  --ot-font-medium: 500;
+  --ot-font-semibold: 600;
+  --ot-font-bold: 700;
+
+  /* Spacing */
+  --ot-space-1: 0.25rem;
+  --ot-space-2: 0.5rem;
+  --ot-space-3: 0.75rem;
+  --ot-space-4: 1rem;
+  --ot-space-5: 1.25rem;
+  --ot-space-6: 1.5rem;
+  --ot-space-8: 2rem;
+  --ot-space-10: 2.5rem;
+  --ot-space-12: 3rem;
+
+  /* Radius */
+  --ot-radius-sm: 0.375rem;
+  --ot-radius-md: 0.5rem;
+  --ot-radius-lg: 0.75rem;
+  --ot-radius-xl: 1rem;
+  --ot-radius-full: 9999px;
+
+  /* Elevation */
+  --ot-shadow-sm: 0 1px 2px color-mix(in srgb, var(--ot-background) 35%, transparent);
+  --ot-shadow-md: 0 8px 24px color-mix(in srgb, var(--ot-background) 55%, transparent);
+  --ot-shadow-lg: 0 16px 40px color-mix(in srgb, var(--ot-background) 65%, transparent);
+
+  /* Focus / motion */
+  --ot-focus-ring: var(--ot-info);
+  --ot-focus-ring-width: 2px;
+  --ot-focus-ring-offset: 2px;
+  --ot-transition-fast: 120ms ease;
+  --ot-transition-normal: 180ms ease;
+
+  /* Layout */
+  --ot-container-max: 72rem;
+  --ot-stack-gap: var(--ot-space-4);
+}
+
+.ot-container {
+  width: min(100% - (var(--ot-space-6) * 2), var(--ot-container-max));
+  margin-inline: auto;
+}
+
+.ot-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ot-stack-gap);
+}
+
+.ot-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ot-space-3);
+}

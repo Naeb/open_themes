@@ -1,0 +1,18 @@
+/* OpenThemes → Bootstrap adapter
+   Maps Bootstrap CSS variables to OpenThemes semantic tokens.
+   Import AFTER a theme stylesheet. Does not require OpenThemes components. */
+
+:root {
+  --bs-body-bg: var(--ot-background);
+  --bs-body-color: var(--ot-text);
+  --bs-secondary-color: var(--ot-muted);
+  --bs-border-color: var(--ot-border);
+  --bs-primary: var(--ot-primary);
+  --bs-success: var(--ot-success);
+  --bs-warning: var(--ot-warning);
+  --bs-danger: var(--ot-danger);
+  --bs-info: var(--ot-info);
+  --bs-link-color: var(--ot-info);
+  --bs-link-hover-color: color-mix(in srgb, var(--ot-info) 80%, var(--ot-text));
+  --bs-focus-ring-color: color-mix(in srgb, var(--ot-info) 40%, transparent);
+}

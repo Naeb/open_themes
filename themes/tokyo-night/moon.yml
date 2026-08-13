@@ -1,0 +1,42 @@
+schema_version: 1
+id: tokyo-night
+variant: moon
+name: Tokyo Night
+variant_name: Moon
+appearance: dark
+meta:
+  license: Apache-2.0
+  source: https://github.com/folke/tokyonight.nvim
+  attribution: Folke Lemaitre (based on enkia/tokyo-night-vscode-theme)
+palette:
+  bg: "#222436"
+  bg_dark: "#1e2030"
+  fg: "#c8d3f5"
+  fg_dark: "#828bb8"
+  red: "#ff757f"
+  green: "#c3e88d"
+  yellow: "#ffc777"
+  blue: "#82aaff"
+  magenta: "#c099ff"
+  cyan: "#86e1fc"
+  orange: "#ff966c"
+  comment: "#636da6"
+  purple: "#fca7ea"
+  teal: "#4fd6be"
+  terminal_black: "#1b1d2b"
+tokens:
+  background: bg
+  surface: bg_dark
+  text: fg
+  muted: comment
+  border: terminal_black
+  primary: blue
+  success: green
+  warning: yellow
+  danger: red
+  info: cyan
+  on_primary: bg
+  on_success: bg
+  on_warning: bg
+  on_danger: bg
+  on_info: bg

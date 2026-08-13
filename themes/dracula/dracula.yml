@@ -1,0 +1,37 @@
+schema_version: 1
+id: dracula
+name: Dracula
+appearance: dark
+meta:
+  license: MIT
+  source: https://github.com/dracula/dracula-theme
+  attribution: Zeno Rocha and Dracula Theme
+palette:
+  background: "#282a36"
+  current_line: "#44475a"
+  selection: "#44475a"
+  foreground: "#f8f8f2"
+  comment: "#6272a4"
+  cyan: "#8be9fd"
+  green: "#50fa7b"
+  orange: "#ffb86c"
+  pink: "#ff79c6"
+  purple: "#bd93f9"
+  red: "#ff5555"
+  yellow: "#f1fa8c"
+tokens:
+  background: background
+  surface: current_line
+  text: foreground
+  muted: comment
+  border: current_line
+  primary: purple
+  success: green
+  warning: orange
+  danger: red
+  info: cyan
+  on_primary: background
+  on_success: background
+  on_warning: background
+  on_danger: background
+  on_info: background

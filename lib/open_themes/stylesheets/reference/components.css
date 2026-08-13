@@ -1,0 +1,153 @@
+/* OpenThemes reference UI — optional demonstration components.
+   These are NOT required. Apps may map Bootstrap/Tailwind/custom UI to --ot-* instead.
+   Rule: never hardcode theme palette colors; only semantic tokens + foundation. */
+
+.ot-btn {
+  --ot-btn-bg: var(--ot-primary);
+  --ot-btn-fg: var(--ot-on-primary);
+  --ot-btn-border: transparent;
+  --ot-btn-hover-bg: color-mix(in srgb, var(--ot-btn-bg) 86%, var(--ot-text));
+  --ot-btn-active-bg: color-mix(in srgb, var(--ot-btn-bg) 78%, var(--ot-text));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ot-space-2);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--ot-btn-border);
+  border-radius: var(--ot-radius-md);
+  background: var(--ot-btn-bg);
+  color: var(--ot-btn-fg);
+  font-family: var(--ot-font-sans);
+  font-size: var(--ot-text-sm);
+  font-weight: var(--ot-font-semibold);
+  line-height: var(--ot-leading-tight);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  box-shadow: var(--ot-shadow-sm);
+  transition:
+    background-color var(--ot-transition-fast),
+    border-color var(--ot-transition-fast),
+    color var(--ot-transition-fast),
+    box-shadow var(--ot-transition-fast),
+    transform 80ms ease;
+}
+
+.ot-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--ot-btn-hover-bg);
+}
+
+.ot-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--ot-btn-active-bg);
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.ot-btn:focus {
+  outline: none;
+}
+
+.ot-btn:focus-visible {
+  outline: var(--ot-focus-ring-width) solid var(--ot-focus-ring);
+  outline-offset: var(--ot-focus-ring-offset);
+}
+
+.ot-btn:disabled,
+.ot-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+
+.ot-btn--sm {
+  padding: 0.35rem 0.7rem;
+  font-size: var(--ot-text-xs);
+  border-radius: var(--ot-radius-sm);
+}
+
+.ot-btn--lg {
+  padding: 0.75rem 1.25rem;
+  font-size: var(--ot-text-md);
+  border-radius: var(--ot-radius-lg);
+}
+
+.ot-btn--primary {
+  --ot-btn-bg: var(--ot-primary);
+  --ot-btn-fg: var(--ot-on-primary);
+}
+
+.ot-btn--success {
+  --ot-btn-bg: var(--ot-success);
+  --ot-btn-fg: var(--ot-on-success);
+}
+
+.ot-btn--warning {
+  --ot-btn-bg: var(--ot-warning);
+  --ot-btn-fg: var(--ot-on-warning);
+}
+
+.ot-btn--danger {
+  --ot-btn-bg: var(--ot-danger);
+  --ot-btn-fg: var(--ot-on-danger);
+}
+
+.ot-btn--info {
+  --ot-btn-bg: var(--ot-info);
+  --ot-btn-fg: var(--ot-on-info);
+}
+
+.ot-btn--outline {
+  --ot-btn-bg: transparent;
+  --ot-btn-fg: var(--ot-text);
+  --ot-btn-border: var(--ot-border);
+  --ot-btn-hover-bg: color-mix(in srgb, var(--ot-surface) 80%, var(--ot-text));
+  --ot-btn-active-bg: color-mix(in srgb, var(--ot-surface) 65%, var(--ot-text));
+  box-shadow: none;
+}
+
+.ot-btn--ghost {
+  --ot-btn-bg: transparent;
+  --ot-btn-fg: var(--ot-primary);
+  --ot-btn-border: transparent;
+  --ot-btn-hover-bg: color-mix(in srgb, var(--ot-primary) 16%, transparent);
+  --ot-btn-active-bg: color-mix(in srgb, var(--ot-primary) 24%, transparent);
+  box-shadow: none;
+}
+
+.ot-card {
+  box-sizing: border-box;
+  background: var(--ot-surface);
+  color: var(--ot-text);
+  border: 1px solid var(--ot-border);
+  border-radius: var(--ot-radius-lg);
+  padding: var(--ot-space-5) var(--ot-space-6);
+  box-shadow: var(--ot-shadow-md);
+  font-family: var(--ot-font-sans);
+}
+
+.ot-card__title {
+  margin: 0 0 var(--ot-space-2);
+  font-size: var(--ot-text-xl);
+  font-weight: var(--ot-font-bold);
+  line-height: var(--ot-leading-tight);
+}
+
+.ot-card__body {
+  margin: 0;
+  color: var(--ot-muted);
+  line-height: var(--ot-leading-normal);
+}
+
+.ot-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ot-space-3);
+  margin-top: var(--ot-space-5);
+}

@@ -48,4 +48,63 @@ RSpec.describe OpenThemes::Installer do
       ]
     )
   end
+
+  it "generates tailwind output when adapter is tailwind" do
+    Dir.mktmpdir do |dir|
+      OpenThemes.configure do |config|
+        config.theme = :catppuccin
+        config.variant = :mocha
+        config.foundation = false
+        config.components = false
+        config.adapter = :tailwind
+      end
+
+      theme = described_class.apply!(root: dir)
+      tailwind_css_path = File.join(dir, "app/assets/tailwind/open_themes.css")
+
+      expect(theme.id).to eq("catppuccin")
+      expect(theme.variant).to eq("mocha")
+      expect(File).to exist(tailwind_css_path)
+
+      tailwind_css = File.read(tailwind_css_path)
+      expect(tailwind_css).to include("@theme inline")
+      expect(tailwind_css).to include("--color-primary: var(--ot-primary)")
+
+      expect(File).not_to exist(File.join(dir, "app/assets/stylesheets/open_themes/theme.css"))
+      expect(File).not_to exist(File.join(dir, "app/assets/stylesheets/open_themes/foundation.css"))
+    end
+  end
+
+  it "falls back to default variant for single-variant themes" do
+    Dir.mktmpdir do |dir|
+      OpenThemes.configure do |config|
+        config.theme = :nord
+        config.variant = :nonexistent
+        config.adapter = nil
+      end
+
+      expect do
+        theme = described_class.apply!(root: dir)
+        expect(theme.id).to eq("nord")
+        expect(theme.variant).to be_nil
+      end.to output(/Warning: Variant 'nonexistent' not found/).to_stderr
+    end
+  end
+
+  it "raises clear error with available variants for multi-variant themes" do
+    Dir.mktmpdir do |dir|
+      OpenThemes.configure do |config|
+        config.theme = :catppuccin
+        config.variant = :mocah
+        config.adapter = nil
+      end
+
+      expect do
+        described_class.apply!(root: dir)
+      end.to raise_error(
+        OpenThemes::Catalog::NotFound,
+        /Variant 'mocah' not found for catppuccin\. Available: frappe, latte, macchiato, mocha/
+      )
+    end
+  end
 end

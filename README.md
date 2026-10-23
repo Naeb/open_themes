@@ -146,8 +146,94 @@ Sizes: `sm`, `md`, `lg`.
 | Adapter | What it does |
 |---------|--------------|
 | `bootstrap` | `--bs-primary` ← `var(--ot-primary)`, body/border/link, etc. |
+| `tailwind` | Maps tokens to Tailwind v4 utilities: `bg-primary`, `text-muted`, `border-border`, etc. |
 
-More adapters (Tailwind, DaisyUI) come later — same idea: map, don't replace the UI.
+### Tailwind v4 Integration
+
+OpenThemes supports Tailwind v4 (Rails 8+) through `@theme inline` blocks that enable local CSS variable overrides (foundation for future dark mode).
+
+**Requirements**: Rails 8+ with `tailwindcss-rails` (Tailwind v4). Not compatible with Tailwind v3.
+
+#### Installation (2 commands)
+
+```bash
+# 1. Install theme
+rails generate open_themes:install catppuccin mocha --adapter tailwind
+
+# 2. Build Tailwind
+bin/rails tailwindcss:build
+```
+
+The `--adapter tailwind` option generates theme with `components: true` by default. Helpers (`ui_button`, `ui_card`) work out of the box. To skip components, pass `--no-components`.
+
+#### How it works
+
+The generator creates `app/assets/tailwind/open_themes.css` with:
+
+1. **`:root` block** with CSS variables (`--ot-background`, `--ot-primary`, etc.)
+2. **`@theme inline` block** mapping variables to Tailwind colors
+
+This structure allows local CSS variable overrides (`--ot-*`) without rebuilding Tailwind — the foundation for future dark mode support.
+
+The file is automatically imported into `app/assets/tailwind/application.css`:
+
+```css
+@import "tailwindcss";
+
+/* OpenThemes:begin */
+@import "./open_themes.css";
+/* OpenThemes:end */
+```
+
+#### Available classes
+
+Once installed, use Tailwind utilities with semantic token colors:
+
+| Token | Example classes |
+|-------|----------------|
+| `primary` | `bg-primary`, `text-primary`, `border-primary` |
+| `surface` | `bg-surface`, `text-surface` |
+| `text` | `text-text` |
+| `muted` | `text-muted` |
+| `border` | `border-border` |
+| `success` | `bg-success`, `text-success` |
+| `warning` | `bg-warning`, `text-warning` |
+| `danger` | `bg-danger`, `text-danger` |
+| `info` | `bg-info`, `text-info` |
+| `on-*` | `text-on-primary`, `text-on-success` (for text on colored backgrounds) |
+
+#### Switching themes
+
+Edit `config/initializers/open_themes.rb`:
+
+```ruby
+OpenThemes.configure do |config|
+  config.theme = :nord  # Changed from :catppuccin
+  config.variant = nil  # nord has no variants
+  config.adapter = :tailwind
+end
+```
+
+Then regenerate and rebuild:
+
+```bash
+bin/rails open_themes:apply
+bin/rails tailwindcss:build
+```
+
+**Variant handling**: If you specify a variant that doesn't exist in the new theme:
+- **Multi-variant themes** (e.g., catppuccin): Error lists available variants
+- **Single-variant themes** (e.g., nord): Warns and uses default variant
+
+The Tailwind entrypoint stays unchanged — only token values in `open_themes.css` are updated, then Tailwind rebuilds utilities with new colors.
+
+**Note**: `@import "tailwindcss" prefix(...)` is not supported with bundled components (the `@apply` directives would need the prefix).
+
+#### Components (Tailwind-compatible)
+
+By default (`components: true`), the adapter includes `.ot-btn`, `.ot-card`, etc. using `@apply` directives wrapped in `@layer components` (allows utility overrides like `ui_button(..., class: "px-8")`).
+
+To skip components: `rails g open_themes:install theme --adapter tailwind --no-components`
 
 ## CLI
 

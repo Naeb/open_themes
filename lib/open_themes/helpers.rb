@@ -16,7 +16,7 @@ module OpenThemes
     end
 
     def ui_card(**html_options, &)
-      classes = class_names("ot-card", html_options.delete(:class))
+      classes = ot_merge_classes("ot-card", html_options.delete(:class))
       content_tag(:div, html_options.merge(class: classes), &)
     end
 
@@ -28,7 +28,7 @@ module OpenThemes
 
       {
         type: html_options.delete(:type) || "button",
-        class: class_names(
+        class: ot_merge_classes(
           "ot-btn",
           "ot-btn--#{variant}",
           ("ot-btn--#{size}" unless size == "md"),
@@ -42,7 +42,7 @@ module OpenThemes
       allowed.include?(choice) ? choice : fallback
     end
 
-    def class_names(*values)
+    def ot_merge_classes(*values)
       values.flatten.compact.reject(&:empty?).join(" ")
     end
   end

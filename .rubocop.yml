@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 3.2
+  TargetRubyVersion: 3.3
   NewCops: enable
   SuggestExtensions: false
   Exclude:
@@ -20,11 +20,19 @@ Metrics/BlockLength:
     - "spec/**/*"
     - "open_themes.gemspec"
 
+Metrics/ClassLength:
+  Exclude:
+    - "lib/generators/open_themes/install/install_generator.rb"
+
 Metrics/MethodLength:
   Max: 15
+  Exclude:
+    - "spec/**/*"
 
 Metrics/AbcSize:
   Max: 20
+  Exclude:
+    - "spec/**/*"
 
 Metrics/CyclomaticComplexity:
   Max: 10

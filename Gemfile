@@ -5,7 +5,9 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in open_themes.gemspec
 gemspec
 
+gem "actionview", "~> 8.0"
 gem "irb"
+gem "railties", "~> 8.0"
 gem "rake", "~> 13.0"
 
 gem "rspec", "~> 3.0"

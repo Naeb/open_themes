@@ -9,6 +9,11 @@ namespace :open_themes do
     end
 
     theme = OpenThemes::Installer.apply!(root: Rails.root, config: config)
-    puts "Applied #{theme.display_name} → app/assets/stylesheets/open_themes/theme.css"
+
+    if config.adapter&.to_s == "tailwind"
+      puts "Applied #{theme.display_name} → app/assets/tailwind/open_themes.css"
+    else
+      puts "Applied #{theme.display_name} → app/assets/stylesheets/open_themes/theme.css"
+    end
   end
 end

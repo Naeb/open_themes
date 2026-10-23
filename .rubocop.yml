@@ -5,6 +5,7 @@ AllCops:
   Exclude:
     - "bin/**/*"
     - "vendor/**/*"
+    - "lib/generators/**/*"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
@@ -22,20 +23,16 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Max: 100
-  Exclude:
-    - "lib/generators/**/*"
 
 Metrics/MethodLength:
   Max: 15
   Exclude:
     - "spec/**/*"
-    - "lib/generators/**/*"
 
 Metrics/AbcSize:
   Max: 20
   Exclude:
     - "spec/**/*"
-    - "lib/generators/**/*"
 
 Metrics/PerceivedComplexity:
   Max: 8

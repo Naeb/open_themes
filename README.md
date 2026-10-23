@@ -150,7 +150,7 @@ Sizes: `sm`, `md`, `lg`.
 
 ### Tailwind v4 Integration
 
-OpenThemes supports Tailwind v4 (Rails 8+) through `@theme inline` blocks that enable runtime theme switching.
+OpenThemes supports Tailwind v4 (Rails 8+) through `@theme inline` blocks that enable local CSS variable overrides (foundation for future dark mode).
 
 **Requirements**: Rails 8+ with `tailwindcss-rails` (Tailwind v4). Not compatible with Tailwind v3.
 
@@ -164,6 +164,8 @@ rails generate open_themes:install catppuccin mocha --adapter tailwind
 bin/rails tailwindcss:build
 ```
 
+The `--adapter tailwind` option generates theme with `components: true` by default. Helpers (`ui_button`, `ui_card`) work out of the box. To skip components, pass `--no-components`.
+
 #### How it works
 
 The generator creates `app/assets/tailwind/open_themes.css` with:
@@ -171,7 +173,7 @@ The generator creates `app/assets/tailwind/open_themes.css` with:
 1. **`:root` block** with CSS variables (`--ot-background`, `--ot-primary`, etc.)
 2. **`@theme inline` block** mapping variables to Tailwind colors
 
-This structure allows runtime theme switching by updating `--ot-*` variables without rebuilding Tailwind.
+This structure allows local CSS variable overrides (`--ot-*`) without rebuilding Tailwind — the foundation for future dark mode support.
 
 The file is automatically imported into `app/assets/tailwind/application.css`:
 
@@ -211,24 +213,20 @@ OpenThemes.configure do |config|
 end
 ```
 
-Then regenerate:
+Then regenerate and rebuild:
 
 ```bash
 bin/rails open_themes:apply
 bin/rails tailwindcss:build
 ```
 
-The Tailwind entrypoint stays unchanged — only token values are updated.
+The Tailwind entrypoint stays unchanged — only token values in `open_themes.css` are updated, then Tailwind rebuilds utilities with new colors.
 
-#### Reference components (optional)
+#### Components (Tailwind-compatible)
 
-By default, `--adapter tailwind` skips foundation and components. To include Tailwind-compatible component styles:
+By default (`components: true`), the adapter includes `.ot-btn`, `.ot-card`, etc. using `@apply` directives wrapped in `@layer components` (allows utility overrides like `ui_button(..., class: "px-8")`).
 
-```bash
-rails generate open_themes:install catppuccin mocha --adapter tailwind --components
-```
-
-This adds `.ot-btn`, `.ot-card`, etc. using `@apply` directives. Helpers (`ui_button`, `ui_card`) work as documented below.
+To skip components: `rails g open_themes:install theme --adapter tailwind --no-components`
 
 ## CLI
 

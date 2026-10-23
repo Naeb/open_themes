@@ -1,56 +1,58 @@
-/* OpenThemes components (Tailwind-compatible) */
-.ot-btn {
-  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
+@layer components {
+  /* OpenThemes components (Tailwind-compatible) */
+  .ot-btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
 
-.ot-btn--primary {
-  @apply bg-primary text-on-primary hover:opacity-90 focus:ring-primary;
-}
+  .ot-btn--primary {
+    @apply bg-primary text-on-primary hover:opacity-90 focus:ring-primary;
+  }
 
-.ot-btn--success {
-  @apply bg-success text-on-success hover:opacity-90 focus:ring-success;
-}
+  .ot-btn--success {
+    @apply bg-success text-on-success hover:opacity-90 focus:ring-success;
+  }
 
-.ot-btn--warning {
-  @apply bg-warning text-on-warning hover:opacity-90 focus:ring-warning;
-}
+  .ot-btn--warning {
+    @apply bg-warning text-on-warning hover:opacity-90 focus:ring-warning;
+  }
 
-.ot-btn--danger {
-  @apply bg-danger text-on-danger hover:opacity-90 focus:ring-danger;
-}
+  .ot-btn--danger {
+    @apply bg-danger text-on-danger hover:opacity-90 focus:ring-danger;
+  }
 
-.ot-btn--info {
-  @apply bg-info text-on-info hover:opacity-90 focus:ring-info;
-}
+  .ot-btn--info {
+    @apply bg-info text-on-info hover:opacity-90 focus:ring-info;
+  }
 
-.ot-btn--outline {
-  @apply border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-on-primary focus:ring-primary;
-}
+  .ot-btn--outline {
+    @apply border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-on-primary focus:ring-primary;
+  }
 
-.ot-btn--ghost {
-  @apply text-primary bg-transparent hover:bg-surface focus:ring-primary;
-}
+  .ot-btn--ghost {
+    @apply text-primary bg-transparent hover:bg-surface focus:ring-primary;
+  }
 
-.ot-btn--sm {
-  @apply px-3 py-1.5 text-xs;
-}
+  .ot-btn--sm {
+    @apply px-3 py-1.5 text-xs;
+  }
 
-.ot-btn--lg {
-  @apply px-6 py-3 text-base;
-}
+  .ot-btn--lg {
+    @apply px-6 py-3 text-base;
+  }
 
-.ot-card {
-  @apply bg-surface border border-border rounded-lg shadow-sm;
-}
+  .ot-card {
+    @apply bg-surface border border-border rounded-lg shadow-sm;
+  }
 
-.ot-card__title {
-  @apply text-text text-xl font-semibold;
-}
+  .ot-card__title {
+    @apply text-text text-xl font-semibold;
+  }
 
-.ot-card__body {
-  @apply text-text;
-}
+  .ot-card__body {
+    @apply text-text;
+  }
 
-.ot-card__actions {
-  @apply flex gap-2;
+  .ot-card__actions {
+    @apply flex gap-2;
+  }
 }

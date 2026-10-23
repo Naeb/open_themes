@@ -10,13 +10,13 @@
 
 - **Tailwind v4 adapter** for Rails 8+ with `tailwindcss-rails`:
   - Generates `app/assets/tailwind/open_themes.css` with `:root` variables and `@theme inline` block
-  - Enables runtime theme switching without rebuilding Tailwind (update CSS vars only)
+  - `@theme inline` allows local `--ot-*` overrides (foundation for future dark mode without rebuild)
   - Auto-imports into `app/assets/tailwind/application.css` with managed markers (idempotent)
   - Maps semantic tokens to Tailwind utilities: `bg-primary`, `text-muted`, `border-border`, etc.
-  - Optional components with `@apply` directives (`.ot-btn`, `.ot-card`)
-  - Install: `rails g open_themes:install theme --adapter tailwind`
-  - Switch themes: Edit initializer + `bin/rails open_themes:apply` + `tailwindcss:build`
-  
+  - Components (`components: true` by default) use `@apply` in `@layer components` for utility overrides
+  - Install: `rails g open_themes:install theme --adapter tailwind`, then `bin/rails tailwindcss:build`
+  - Switch themes: Edit initializer + `bin/rails open_themes:apply` + `bin/rails tailwindcss:build`
+
 ### Changed
 
 - Tailwind v3 (`application.tailwind.css` entrypoint) is not supported by the adapter; use Tailwind v4 (Rails 8+) only

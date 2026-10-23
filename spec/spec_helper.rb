@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "open_themes"
+require "uri"
 require "action_view"
 
 RSpec.configure do |config|

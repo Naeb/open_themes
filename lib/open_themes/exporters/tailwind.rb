@@ -50,7 +50,7 @@ module OpenThemes
              License: #{@theme.meta["license"]} — #{@theme.meta["attribution"]}
 
              Enables Tailwind utilities: bg-primary, text-muted, border-border, etc.
-             Uses @theme inline to allow runtime theme switching via CSS variables. */
+             @theme inline allows overriding --ot-* CSS variables for runtime switching. */
         CSS
       end
 

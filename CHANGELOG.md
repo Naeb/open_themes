@@ -9,7 +9,7 @@
 - `open_themes:apply` no longer fails when switching to a theme without the previously configured variant; warns and uses default variant instead
 - Generator usage hint now includes `--adapter tailwind` in Tailwind mode for accurate re-run commands
 - Generator now raises `Thor::Error` instead of `exit(1)` for invalid adapter, allowing proper error handling
-- Focus ring offset in Tailwind components now uses `focus-visible:` (no white halo on dark themes)
+- Focus ring offset in Tailwind components now uses `focus-visible:ring-offset-background` (matches theme background, no white halo on dark themes)
 - Entrypoint insertion regex now handles `@import "tailwindcss" source(...) prefix(...)` and avoids double blank lines
 
 ### Added
@@ -29,6 +29,7 @@
 - Generator validates adapter option and raises Thor::Error for invalid values
 - In Tailwind mode, generator only touches Tailwind entrypoint (not `application.css`)
 - Development dependencies now target Rails 8+ (`actionview ~> 8.0`, `railties ~> 8.0`)
+- `.rubocop.yml` now explicitly sets `MethodLength Max: 15` and `AbcSize Max: 20` (non-default values)
 
 ## [0.2.1] - 2026-08-13
 

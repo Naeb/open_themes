@@ -25,13 +25,12 @@ Metrics/ClassLength:
     - "lib/generators/open_themes/install/install_generator.rb"
 
 Metrics/MethodLength:
+  Max: 15
   Exclude:
     - "spec/**/*"
-    - "lib/generators/open_themes/install/install_generator.rb"
-    - "lib/open_themes/helpers.rb"
-    - "lib/open_themes/exporters/json.rb"
 
 Metrics/AbcSize:
+  Max: 20
   Exclude:
     - "spec/**/*"
 

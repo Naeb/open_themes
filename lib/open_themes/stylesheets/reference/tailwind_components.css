@@ -2,7 +2,7 @@
   /* OpenThemes components (Tailwind-compatible) */
   .ot-btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 
   .ot-btn--primary {

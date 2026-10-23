@@ -1,195 +1,282 @@
 # frozen_string_literal: true
 
-require "rails/generators/test_case"
 require "tmpdir"
 require "fileutils"
+require "generators/open_themes/install/install_generator"
 
 RSpec.describe OpenThemes::Generators::InstallGenerator do
   include FileUtils
 
   around do |example|
     OpenThemes.reset_configuration!
-    
+
     Dir.mktmpdir do |dir|
       @destination_root = dir
       example.run
     end
-    
+
     OpenThemes.reset_configuration!
   end
 
   let(:destination_root) { @destination_root }
 
-  describe "with --adapter=tailwind" do
-    it "generates tailwind.css with @theme block" do
-      create_tailwind_entrypoint("app/assets/tailwind/application.css")
-      
-      run_generator(["catppuccin", "mocha", "--adapter=tailwind"])
-      
-      tailwind_css = read_file("app/assets/stylesheets/open_themes/tailwind.css")
-      expect(tailwind_css).to include("@theme {")
-      expect(tailwind_css).to include("--color-primary: var(--ot-primary)")
-      expect(tailwind_css).to include("Catppuccin Mocha")
+  describe "with --adapter tailwind" do
+    it "generates open_themes.css in app/assets/tailwind with @theme inline" do
+      create_tailwind_entrypoint
+      run_generator(["catppuccin", "mocha", "--adapter", "tailwind"])
+
+      output_path = File.join(destination_root, "app/assets/tailwind/open_themes.css")
+      expect(File).to exist(output_path)
+
+      content = File.read(output_path)
+      expect(content).to include("@theme inline")
+      expect(content).to include(":root {")
+      expect(content).to include("--ot-primary:")
+      expect(content).to include("--color-primary: var(--ot-primary)")
+      expect(content).to include("Catppuccin Mocha")
     end
 
-    it "detects Rails 8 Tailwind entrypoint" do
-      entrypoint = create_tailwind_entrypoint("app/assets/tailwind/application.css")
-      
-      run_generator(["nord", "--adapter=tailwind"])
-      
-      content = File.read(entrypoint)
-      expect(content).to include("/* OpenThemes:tailwind:begin */")
-      expect(content).to include('@import "../stylesheets/open_themes/tailwind.css";')
-      expect(content).to include("/* OpenThemes:tailwind:end */")
-    end
+    it "updates entrypoint with managed import" do
+      entrypoint = create_tailwind_entrypoint
 
-    it "detects Rails 7 Tailwind entrypoint" do
-      entrypoint = create_tailwind_entrypoint("app/assets/stylesheets/application.tailwind.css")
-      
-      run_generator(["nord", "--adapter=tailwind"])
-      
+      run_generator(["nord", "--adapter", "tailwind"])
+
       content = File.read(entrypoint)
-      expect(content).to include("/* OpenThemes:tailwind:begin */")
-      expect(content).to include('@import "open_themes/tailwind.css";')
-      expect(content).to include("/* OpenThemes:tailwind:end */")
+      expect(content).to include("/* OpenThemes:begin */")
+      expect(content).to include('@import "./open_themes.css";')
+      expect(content).to include("/* OpenThemes:end */")
     end
 
     it "is idempotent - running twice does not duplicate" do
-      entrypoint = create_tailwind_entrypoint("app/assets/tailwind/application.css")
-      
-      run_generator(["catppuccin", "mocha", "--adapter=tailwind"])
+      entrypoint = create_tailwind_entrypoint
+
+      run_generator(["catppuccin", "mocha", "--adapter", "tailwind"])
       first_content = File.read(entrypoint)
-      
-      run_generator(["catppuccin", "mocha", "--adapter=tailwind", "--force"])
+
+      run_generator(["catppuccin", "mocha", "--adapter", "tailwind", "--force"])
       second_content = File.read(entrypoint)
-      
+
       expect(first_content).to eq(second_content)
-      expect(first_content.scan(/OpenThemes:tailwind:begin/).size).to eq(1)
+      expect(first_content.scan("OpenThemes:begin").size).to eq(1)
     end
 
-    it "updates block when changing themes" do
-      entrypoint = create_tailwind_entrypoint("app/assets/tailwind/application.css")
-      
-      run_generator(["catppuccin", "mocha", "--adapter=tailwind"])
-      mocha_css = read_file("app/assets/stylesheets/open_themes/tailwind.css")
-      
-      run_generator(["nord", "--adapter=tailwind", "--force"])
-      nord_css = read_file("app/assets/stylesheets/open_themes/tailwind.css")
-      
+    it "updates managed block when changing themes" do
+      create_tailwind_entrypoint
+
+      run_generator(["catppuccin", "mocha", "--adapter", "tailwind"])
+      mocha_css = read_file("app/assets/tailwind/open_themes.css")
+
+      run_generator(["nord", "--adapter", "tailwind", "--force"])
+      nord_css = read_file("app/assets/tailwind/open_themes.css")
+
       expect(mocha_css).to include("Catppuccin Mocha")
       expect(nord_css).to include("Nord")
       expect(nord_css).not_to include("Catppuccin")
-      
-      # Entrypoint should still have only one block
-      content = File.read(entrypoint)
-      expect(content.scan(/OpenThemes:tailwind:begin/).size).to eq(1)
     end
 
     it "inserts after @import 'tailwindcss' if present" do
-      entrypoint = create_tailwind_entrypoint(
-        "app/assets/tailwind/application.css",
-        '@import "tailwindcss";'
-      )
-      
-      run_generator(["nord", "--adapter=tailwind"])
-      
+      entrypoint = create_tailwind_entrypoint('@import "tailwindcss";')
+
+      run_generator(["nord", "--adapter", "tailwind"])
+
       content = File.read(entrypoint)
       lines = content.lines.map(&:strip)
-      
-      import_index = lines.index('@import "tailwindcss";')
-      theme_begin_index = lines.index("/* OpenThemes:tailwind:begin */")
-      
-      expect(theme_begin_index).to be > import_index
+
+      tailwind_index = lines.index('@import "tailwindcss";')
+      theme_begin_index = lines.index("/* OpenThemes:begin */")
+
+      expect(theme_begin_index).to be > tailwind_index
     end
 
     it "warns when Tailwind entrypoint is not found" do
-      # Don't create a Tailwind entrypoint
-      
-      output = capture_generator_output do
-        run_generator(["nord", "--adapter=tailwind"])
+      output = capture_output do
+        run_generator(["nord", "--adapter", "tailwind"])
       end
-      
+
       expect(output).to include("Tailwind entrypoint not found")
       expect(output).to include("app/assets/tailwind/application.css")
-      expect(output).to include("app/assets/stylesheets/application.tailwind.css")
-      
-      # Should still generate the CSS file
-      expect(File).to exist(File.join(destination_root, "app/assets/stylesheets/open_themes/tailwind.css"))
+
+      expect(File).to exist(File.join(destination_root, "app/assets/tailwind/open_themes.css"))
     end
 
-    it "validates adapter option" do
-      create_tailwind_entrypoint("app/assets/tailwind/application.css")
-      
-      expect {
-        run_generator(["nord", "--adapter=invalid"])
-      }.to raise_error(/Unknown adapter: 'invalid'/)
+    it "includes components when --components is true" do
+      create_tailwind_entrypoint
+
+      run_generator(["nord", "--adapter", "tailwind", "--components"])
+
+      content = read_file("app/assets/tailwind/open_themes.css")
+      expect(content).to include(".ot-btn {")
+      expect(content).to include("@apply")
+    end
+
+    it "excludes components when --no-components" do
+      create_tailwind_entrypoint
+
+      run_generator(["nord", "--adapter", "tailwind", "--no-components"])
+
+      content = read_file("app/assets/tailwind/open_themes.css")
+      expect(content).not_to include(".ot-btn")
     end
   end
 
   describe "standard adapter behavior" do
-    it "uses standard imports for bootstrap adapter" do
+    it "generates theme.css in app/assets/stylesheets for bootstrap adapter" do
       create_stylesheet("app/assets/stylesheets/application.css")
-      
-      run_generator(["nord", "--adapter=bootstrap"])
-      
-      css = read_file("app/assets/stylesheets/application.css")
-      expect(css).to include('@import "open_themes/theme.css";')
-      expect(css).to include('@import "open_themes/adapters/bootstrap.css";')
-      expect(css).not_to include("OpenThemes:tailwind:begin")
+
+      run_generator(["nord", "--adapter", "bootstrap"])
+
+      expect(File).to exist(File.join(destination_root, "app/assets/stylesheets/open_themes/theme.css"))
+      content = read_file("app/assets/stylesheets/open_themes/theme.css")
+      expect(content).to include(":root {")
+      expect(content).to include("--ot-primary:")
     end
 
-    it "uses standard imports when no adapter specified" do
+    it "adds imports to application.css for bootstrap adapter" do
+      app_css = create_stylesheet("app/assets/stylesheets/application.css")
+
+      run_generator(["nord", "--adapter", "bootstrap"])
+
+      content = File.read(app_css)
+      expect(content).to include('@import "open_themes/theme.css";')
+      expect(content).to include('@import "open_themes/adapters/bootstrap.css";')
+    end
+
+    it "generates standard files when no adapter specified" do
       create_stylesheet("app/assets/stylesheets/application.css")
-      
-      run_generator(["catppuccin", "mocha"])
-      
-      css = read_file("app/assets/stylesheets/application.css")
-      expect(css).to include('@import "open_themes/theme.css";')
+
+      run_generator(%w[catppuccin mocha])
+
       expect(File).to exist(File.join(destination_root, "app/assets/stylesheets/open_themes/theme.css"))
+      content = read_file("app/assets/stylesheets/application.css")
+      expect(content).to include('@import "open_themes/theme.css";')
+    end
+
+    it "does not touch Tailwind entrypoint when adapter is not tailwind" do
+      tailwind_entrypoint = create_tailwind_entrypoint
+      app_css = create_stylesheet("app/assets/stylesheets/application.css")
+
+      run_generator(["nord"])
+
+      tailwind_content = File.read(tailwind_entrypoint)
+      expect(tailwind_content).not_to include("OpenThemes")
+
+      app_css_content = File.read(app_css)
+      expect(app_css_content).to include('@import "open_themes/theme.css";')
+    end
+  end
+
+  describe "validation" do
+    it "exits with non-zero status for invalid adapter" do
+      expect do
+        run_generator(["nord", "--adapter", "invalid"], allow_exit: true)
+      end.to raise_error(SystemExit)
     end
   end
 
   private
 
-  def run_generator(args)
-    generator_class = OpenThemes::Generators::InstallGenerator
-    generator = generator_class.new(args, {}, { destination_root: destination_root })
-    
-    # Suppress output during tests
+  def run_generator(args, allow_exit: false)
+    OpenThemes.reset_configuration!
+    positional_args, options_hash = parse_generator_args(args)
+
+    generator = OpenThemes::Generators::InstallGenerator.new(
+      positional_args,
+      options_hash,
+      { destination_root: destination_root }
+    )
+
     allow(generator).to receive(:say)
-    
-    generator.invoke_all
+
+    if allow_exit
+      generator.invoke_all
+    else
+      begin
+        generator.invoke_all
+      rescue SystemExit => e
+        raise e unless e.success?
+      end
+    end
   end
 
-  def create_tailwind_entrypoint(path, initial_content = "")
-    full_path = File.join(destination_root, path)
-    mkdir_p(File.dirname(full_path))
-    File.write(full_path, initial_content)
-    full_path
+  def parse_generator_args(args)
+    positional_args = []
+    options_hash = {}
+
+    i = 0
+    while i < args.size
+      arg = args[i]
+      if arg.start_with?("--")
+        consumed = parse_option(arg, args, i, options_hash)
+        i += consumed # Skip consumed args (1 for flag, 2 for key=value pairs)
+      else
+        positional_args << arg
+        i += 1
+      end
+    end
+
+    [positional_args, options_hash]
   end
 
-  def create_stylesheet(path)
-    full_path = File.join(destination_root, path)
-    mkdir_p(File.dirname(full_path))
-    File.write(full_path, "")
-    full_path
+  def parse_option(arg, args, index, options_hash)
+    if arg.include?("=")
+      key, value = arg[2..].split("=", 2)
+      options_hash[key.tr("-", "_").to_sym] = value
+      1  # Consumed 1 arg
+    elsif arg.start_with?("--no-")
+      key = arg[5..].tr("-", "_")
+      options_hash[key.to_sym] = false
+      1  # Consumed 1 arg
+    elsif should_consume_next_arg?(arg, args, index)
+      options_hash[arg[2..].tr("-", "_").to_sym] = args[index + 1]
+      2  # Consumed 2 args (key + value)
+    else
+      options_hash[arg[2..].tr("-", "_").to_sym] = true
+      1  # Consumed 1 arg
+    end
+  end
+
+  def should_consume_next_arg?(arg, args, index)
+    !arg.include?("=") &&
+      !arg.start_with?("--no-") &&
+      index + 1 < args.size &&
+      !args[index + 1].start_with?("--")
+  end
+
+  def create_tailwind_entrypoint(initial_content = "")
+    path = File.join(destination_root, "app/assets/tailwind/application.css")
+    mkdir_p(File.dirname(path))
+    File.write(path, initial_content)
+    path
+  end
+
+  def create_stylesheet(relative_path)
+    path = File.join(destination_root, relative_path)
+    mkdir_p(File.dirname(path))
+    File.write(path, "")
+    path
   end
 
   def read_file(relative_path)
     File.read(File.join(destination_root, relative_path))
   end
 
-  def capture_generator_output
-    output = StringIO.new
-    generator_class = OpenThemes::Generators::InstallGenerator
-    generator = generator_class.new(["nord", "--adapter=tailwind"], {}, { destination_root: destination_root })
-    
-    # Capture say calls
-    allow(generator).to receive(:say) do |message, color|
-      output.puts(message)
+  def capture_output
+    output = []
+
+    positional_args = ["nord"]
+    options_hash = { adapter: "tailwind" }
+
+    generator = OpenThemes::Generators::InstallGenerator.new(
+      positional_args,
+      options_hash,
+      { destination_root: destination_root }
+    )
+
+    allow(generator).to receive(:say) do |message, _color|
+      output << message
     end
-    
+
     generator.invoke_all
-    output.string
+    output.join("\n")
   end
 end

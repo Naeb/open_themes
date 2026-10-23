@@ -150,53 +150,50 @@ Sizes: `sm`, `md`, `lg`.
 
 ### Tailwind v4 Integration
 
-OpenThemes supports Tailwind v4 through a native `@theme` block that maps semantic tokens to Tailwind color utilities.
+OpenThemes supports Tailwind v4 (Rails 8+) through `@theme inline` blocks that enable runtime theme switching.
+
+**Requirements**: Rails 8+ with `tailwindcss-rails` (Tailwind v4). Not compatible with Tailwind v3.
 
 #### Installation (2 commands)
 
-1. In a Rails 8 app with Tailwind:
-
 ```bash
-rails generate open_themes:install catppuccin mocha --adapter=tailwind --no-components
-```
+# 1. Install theme
+rails generate open_themes:install catppuccin mocha --adapter tailwind
 
-2. Build Tailwind CSS:
-
-```bash
+# 2. Build Tailwind
 bin/rails tailwindcss:build
 ```
 
 #### How it works
 
-The generator creates `app/assets/stylesheets/open_themes/tailwind.css` with a `@theme` block:
+The generator creates `app/assets/tailwind/open_themes.css` with:
+
+1. **`:root` block** with CSS variables (`--ot-background`, `--ot-primary`, etc.)
+2. **`@theme inline` block** mapping variables to Tailwind colors
+
+This structure allows runtime theme switching by updating `--ot-*` variables without rebuilding Tailwind.
+
+The file is automatically imported into `app/assets/tailwind/application.css`:
 
 ```css
-@theme {
-  /* Theme tokens as CSS variables */
-  --ot-background: #1e1e2e;
-  --ot-primary: #cba6f7;
-  /* ... */
-  
-  /* Map to Tailwind color utilities */
-  --color-primary: var(--ot-primary);
-  --color-background: var(--ot-background);
-  /* ... */
-}
-```
+@import "tailwindcss";
 
-This is automatically imported into your Tailwind entrypoint (`app/assets/tailwind/application.css` for Rails 8, or `app/assets/stylesheets/application.tailwind.css` for Rails 7).
+/* OpenThemes:begin */
+@import "./open_themes.css";
+/* OpenThemes:end */
+```
 
 #### Available classes
 
-Once installed, you can use these Tailwind utilities:
+Once installed, use Tailwind utilities with semantic token colors:
 
 | Token | Example classes |
 |-------|----------------|
 | `primary` | `bg-primary`, `text-primary`, `border-primary` |
 | `surface` | `bg-surface`, `text-surface` |
-| `text` | `bg-text`, `text-text` |
-| `muted` | `bg-muted`, `text-muted` |
-| `border` | `bg-border`, `border-border` |
+| `text` | `text-text` |
+| `muted` | `text-muted` |
+| `border` | `border-border` |
 | `success` | `bg-success`, `text-success` |
 | `warning` | `bg-warning`, `text-warning` |
 | `danger` | `bg-danger`, `text-danger` |
@@ -217,11 +214,21 @@ end
 Then regenerate:
 
 ```bash
-rails generate open_themes:install nord --adapter=tailwind --no-components --force
+bin/rails open_themes:apply
 bin/rails tailwindcss:build
 ```
 
-The Tailwind entrypoint stays unchanged — only the token values are updated.
+The Tailwind entrypoint stays unchanged — only token values are updated.
+
+#### Reference components (optional)
+
+By default, `--adapter tailwind` skips foundation and components. To include Tailwind-compatible component styles:
+
+```bash
+rails generate open_themes:install catppuccin mocha --adapter tailwind --components
+```
+
+This adds `.ot-btn`, `.ot-card`, etc. using `@apply` directives. Helpers (`ui_button`, `ui_card`) work as documented below.
 
 ## CLI
 

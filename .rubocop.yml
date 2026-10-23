@@ -21,18 +21,27 @@ Metrics/BlockLength:
     - "open_themes.gemspec"
 
 Metrics/ClassLength:
+  Max: 100
   Exclude:
     - "lib/generators/**/*"
 
 Metrics/MethodLength:
   Max: 15
   Exclude:
+    - "spec/**/*"
     - "lib/generators/**/*"
 
 Metrics/AbcSize:
   Max: 20
   Exclude:
+    - "spec/**/*"
     - "lib/generators/**/*"
+
+Metrics/PerceivedComplexity:
+  Max: 8
+
+Metrics/BlockNesting:
+  Max: 3
 
 Metrics/CyclomaticComplexity:
   Max: 10

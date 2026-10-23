@@ -7,6 +7,7 @@ module OpenThemes
   # Writes stable stylesheet entrypoints into a Rails (or compatible) app.
   class Installer
     STYLES_DIR = %w[app assets stylesheets open_themes].freeze
+    TAILWIND_DIR = %w[app assets tailwind].freeze
 
     def self.apply!(root:, config: OpenThemes.configuration)
       new(root: root, config: config).apply!
@@ -27,33 +28,37 @@ module OpenThemes
       lines = ['@import "open_themes/theme.css";']
       lines << '@import "open_themes/foundation.css";' if @config.foundation
       lines << '@import "open_themes/components.css";' if @config.components
-      lines << %(@import "open_themes/adapters/#{adapter_name}.css";) if adapter_name
+      lines << %(@import "open_themes/adapters/#{adapter_name}.css";) if adapter_name && adapter_name != "tailwind"
       lines
     end
 
     private
 
     def write_stylesheets(theme)
-      styles_path.mkpath
-
       adapter = adapter_name
 
       if adapter == "tailwind"
-        # For Tailwind, generate a @theme block instead of standard CSS
-        write("tailwind.css", Exporters::Tailwind.export(theme))
+        write_tailwind_stylesheet(theme)
       else
-        # Standard CSS variables approach
-        write("theme.css", Exporters::Css.export(theme))
-        write("foundation.css", Assets.foundation_css) if @config.foundation
-        write("components.css", Assets.components_css) if @config.components
-        write_adapter_stylesheet if adapter && adapter != "tailwind"
+        write_standard_stylesheets(theme, adapter)
       end
     end
 
-    def write_adapter_stylesheet
-      return unless adapter_name
+    def write_tailwind_stylesheet(theme)
+      tailwind_path.mkpath
+      write_to_tailwind("open_themes.css", Exporters::Tailwind.export(theme, components: @config.components))
+    end
 
-      write(File.join("adapters", "#{adapter_name}.css"), Assets.adapter_css(adapter_name))
+    def write_standard_stylesheets(theme, adapter)
+      styles_path.mkpath
+      write("theme.css", Exporters::Css.export(theme))
+      write("foundation.css", Assets.foundation_css) if @config.foundation
+      write("components.css", Assets.components_css) if @config.components
+      write_adapter_stylesheet(adapter) if adapter
+    end
+
+    def write_adapter_stylesheet(adapter)
+      write(File.join("adapters", "#{adapter}.css"), Assets.adapter_css(adapter))
     end
 
     def adapter_name
@@ -67,8 +72,18 @@ module OpenThemes
       @root.join(*STYLES_DIR)
     end
 
+    def tailwind_path
+      @root.join(*TAILWIND_DIR)
+    end
+
     def write(relative, contents)
       path = styles_path.join(relative)
+      path.dirname.mkpath
+      File.write(path, contents)
+    end
+
+    def write_to_tailwind(relative, contents)
+      path = tailwind_path.join(relative)
       path.dirname.mkpath
       File.write(path, contents)
     end

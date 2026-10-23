@@ -16,10 +16,11 @@ module OpenThemes
       class_option :components, type: :boolean, default: true,
                                 desc: "Install optional reference UI components"
       class_option :adapter, type: :string, default: nil,
-                             desc: "Optional adapter (bootstrap)"
+                             desc: "Optional adapter (bootstrap, tailwind)"
 
       def apply_stylesheets
         sync_configuration_from_options
+        validate_adapter_option!
         theme = OpenThemes::Installer.apply!(root: destination_root, config: OpenThemes.configuration)
         say "Theme applied: #{theme.display_name} → open_themes/theme.css", :green
       rescue OpenThemes::Catalog::NotFound, ArgumentError => e
@@ -31,6 +32,61 @@ module OpenThemes
       end
 
       def ensure_stylesheet_imports
+        adapter = options[:adapter]&.to_s
+
+        if adapter == "tailwind"
+          ensure_tailwind_theme_block
+        else
+          ensure_standard_imports
+        end
+      end
+
+      def ensure_tailwind_theme_block
+        path = tailwind_entrypoint_path
+
+        unless path
+          say "⚠️  Tailwind entrypoint not found. Expected paths:", :yellow
+          say "  - app/assets/tailwind/application.css (Rails 8+)", :yellow
+          say "  - app/assets/stylesheets/application.tailwind.css (Rails 7)", :yellow
+          say ""
+          say "Theme CSS generated at app/assets/stylesheets/open_themes/tailwind.css", :green
+          say "Please import it manually into your Tailwind entrypoint with:", :yellow
+          say '  @import "../../stylesheets/open_themes/tailwind.css";', :yellow
+          return
+        end
+
+        content = File.read(path)
+        marker_begin = "/* OpenThemes:tailwind:begin */"
+        marker_end = "/* OpenThemes:tailwind:end */"
+
+        import_line = tailwind_import_line(path)
+        block = "#{marker_begin}\n#{import_line}\n#{marker_end}"
+
+        if content.include?(marker_begin)
+          # Update existing block
+          updated = content.sub(
+            /#{Regexp.escape(marker_begin)}.*?#{Regexp.escape(marker_end)}/m,
+            block
+          )
+          File.write(path, updated)
+          say "Updated Tailwind theme block in #{relative_path(path)}", :green
+        else
+          # Insert new block after @import "tailwindcss" if present, otherwise at top
+          updated = if content.match?(/^\s*@import\s+["']tailwindcss["'];?\s*$/m)
+                      content.sub(
+                        /^(\s*@import\s+["']tailwindcss["'];?\s*)$/m,
+                        "\\1\n\n#{block}\n"
+                      )
+                    else
+                      "#{block}\n\n#{content}"
+                    end
+
+          File.write(path, updated)
+          say "Added Tailwind theme block to #{relative_path(path)}", :green
+        end
+      end
+
+      def ensure_standard_imports
         path = application_stylesheet_path
         return unless path
 
@@ -55,6 +111,16 @@ module OpenThemes
       end
 
       private
+
+      def validate_adapter_option!
+        adapter = options[:adapter]&.to_s
+        return if adapter.nil? || adapter.empty?
+
+        valid_adapters = %w[bootstrap tailwind]
+        return if valid_adapters.include?(adapter)
+
+        raise Thor::Error, "Unknown adapter: '#{adapter}'. Valid options: #{valid_adapters.join(", ")}"
+      end
 
       def sync_configuration_from_options
         OpenThemes.configure do |config|
@@ -93,6 +159,32 @@ module OpenThemes
           app/assets/stylesheets/application.scss
           app/assets/stylesheets/application.css.scss
         ].map { |relative| File.join(destination_root, relative) }.find { |path| File.exist?(path) }
+      end
+
+      def tailwind_entrypoint_path
+        [
+          "app/assets/tailwind/application.css", # Rails 8
+          "app/assets/stylesheets/application.tailwind.css" # Rails 7
+        ].map { |relative| File.join(destination_root, relative) }
+         .find { |path| File.exist?(path) }
+      end
+
+      def tailwind_import_line(entrypoint_path)
+        # Calculate relative path from Tailwind entrypoint to the theme file
+        File.dirname(entrypoint_path)
+        File.join(destination_root, "app/assets/stylesheets/open_themes/tailwind.css")
+
+        # For app/assets/tailwind/application.css → ../stylesheets/open_themes/tailwind.css
+        # For app/assets/stylesheets/application.tailwind.css → open_themes/tailwind.css
+        if entrypoint_path.include?("app/assets/tailwind/")
+          '@import "../stylesheets/open_themes/tailwind.css";'
+        else
+          '@import "open_themes/tailwind.css";'
+        end
+      end
+
+      def relative_path(absolute_path)
+        Pathname.new(absolute_path).relative_path_from(Pathname.new(destination_root)).to_s
       end
 
       def append_imports(path)

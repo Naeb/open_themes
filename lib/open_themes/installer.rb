@@ -35,10 +35,19 @@ module OpenThemes
 
     def write_stylesheets(theme)
       styles_path.mkpath
-      write("theme.css", Exporters::Css.export(theme))
-      write("foundation.css", Assets.foundation_css) if @config.foundation
-      write("components.css", Assets.components_css) if @config.components
-      write_adapter_stylesheet
+
+      adapter = adapter_name
+
+      if adapter == "tailwind"
+        # For Tailwind, generate a @theme block instead of standard CSS
+        write("tailwind.css", Exporters::Tailwind.export(theme))
+      else
+        # Standard CSS variables approach
+        write("theme.css", Exporters::Css.export(theme))
+        write("foundation.css", Assets.foundation_css) if @config.foundation
+        write("components.css", Assets.components_css) if @config.components
+        write_adapter_stylesheet if adapter && adapter != "tailwind"
+      end
     end
 
     def write_adapter_stylesheet

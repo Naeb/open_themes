@@ -146,8 +146,82 @@ Sizes: `sm`, `md`, `lg`.
 | Adapter | What it does |
 |---------|--------------|
 | `bootstrap` | `--bs-primary` ← `var(--ot-primary)`, body/border/link, etc. |
+| `tailwind` | Maps tokens to Tailwind v4 utilities: `bg-primary`, `text-muted`, `border-border`, etc. |
 
-More adapters (Tailwind, DaisyUI) come later — same idea: map, don't replace the UI.
+### Tailwind v4 Integration
+
+OpenThemes supports Tailwind v4 through a native `@theme` block that maps semantic tokens to Tailwind color utilities.
+
+#### Installation (2 commands)
+
+1. In a Rails 8 app with Tailwind:
+
+```bash
+rails generate open_themes:install catppuccin mocha --adapter=tailwind --no-components
+```
+
+2. Build Tailwind CSS:
+
+```bash
+bin/rails tailwindcss:build
+```
+
+#### How it works
+
+The generator creates `app/assets/stylesheets/open_themes/tailwind.css` with a `@theme` block:
+
+```css
+@theme {
+  /* Theme tokens as CSS variables */
+  --ot-background: #1e1e2e;
+  --ot-primary: #cba6f7;
+  /* ... */
+  
+  /* Map to Tailwind color utilities */
+  --color-primary: var(--ot-primary);
+  --color-background: var(--ot-background);
+  /* ... */
+}
+```
+
+This is automatically imported into your Tailwind entrypoint (`app/assets/tailwind/application.css` for Rails 8, or `app/assets/stylesheets/application.tailwind.css` for Rails 7).
+
+#### Available classes
+
+Once installed, you can use these Tailwind utilities:
+
+| Token | Example classes |
+|-------|----------------|
+| `primary` | `bg-primary`, `text-primary`, `border-primary` |
+| `surface` | `bg-surface`, `text-surface` |
+| `text` | `bg-text`, `text-text` |
+| `muted` | `bg-muted`, `text-muted` |
+| `border` | `bg-border`, `border-border` |
+| `success` | `bg-success`, `text-success` |
+| `warning` | `bg-warning`, `text-warning` |
+| `danger` | `bg-danger`, `text-danger` |
+| `info` | `bg-info`, `text-info` |
+| `on-*` | `text-on-primary`, `text-on-success` (for text on colored backgrounds) |
+
+#### Switching themes
+
+Edit `config/initializers/open_themes.rb`:
+
+```ruby
+OpenThemes.configure do |config|
+  config.theme = :nord  # Changed from :catppuccin
+  config.adapter = :tailwind
+end
+```
+
+Then regenerate:
+
+```bash
+rails generate open_themes:install nord --adapter=tailwind --no-components --force
+bin/rails tailwindcss:build
+```
+
+The Tailwind entrypoint stays unchanged — only the token values are updated.
 
 ## CLI
 

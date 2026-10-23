@@ -48,4 +48,26 @@ RSpec.describe OpenThemes::Installer do
       ]
     )
   end
+
+  it "generates tailwind.css when adapter is tailwind" do
+    Dir.mktmpdir do |dir|
+      OpenThemes.configure do |config|
+        config.theme = :catppuccin
+        config.variant = :mocha
+        config.foundation = false
+        config.components = false
+        config.adapter = :tailwind
+      end
+
+      theme = described_class.apply!(root: dir)
+      tailwind_css = File.read(File.join(dir, "app/assets/stylesheets/open_themes/tailwind.css"))
+
+      expect(theme.id).to eq("catppuccin")
+      expect(theme.variant).to eq("mocha")
+      expect(tailwind_css).to include("@theme {")
+      expect(tailwind_css).to include("--color-primary: var(--ot-primary)")
+      expect(File).not_to exist(File.join(dir, "app/assets/stylesheets/open_themes/theme.css"))
+      expect(File).not_to exist(File.join(dir, "app/assets/stylesheets/open_themes/foundation.css"))
+    end
+  end
 end

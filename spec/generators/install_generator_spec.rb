@@ -200,6 +200,39 @@ RSpec.describe OpenThemes::Generators::InstallGenerator do
       expect(tailwind_css).to include("@theme inline")
       expect(tailwind_css).to include("Nord")
     end
+
+    it "reads adapter from string form in initializer" do
+      create_tailwind_entrypoint
+
+      # Create initializer directory and file with string adapter
+      FileUtils.mkdir_p(File.join(destination_root, "config/initializers"))
+      File.write(
+        File.join(destination_root, "config/initializers/open_themes.rb"),
+        'OpenThemes.configure { |c| c.adapter = "tailwind" }'
+      )
+
+      run_generator(["nord", "--force"])
+
+      tailwind_css = read_file("app/assets/tailwind/open_themes.css")
+      expect(tailwind_css).to include("@theme inline")
+    end
+
+    it "ignores commented adapter in initializer" do
+      create_stylesheet("app/assets/stylesheets/application.css")
+
+      # Create initializer directory and file with commented adapter
+      FileUtils.mkdir_p(File.join(destination_root, "config/initializers"))
+      File.write(
+        File.join(destination_root, "config/initializers/open_themes.rb"),
+        "OpenThemes.configure { |c| c.theme = :nord\n  # c.adapter = :tailwind }"
+      )
+
+      run_generator(["nord", "--force"])
+
+      # Should generate standard mode (no adapter)
+      expect(File).to exist(File.join(destination_root, "app/assets/stylesheets/open_themes/theme.css"))
+      expect(File).not_to exist(File.join(destination_root, "app/assets/tailwind/open_themes.css"))
+    end
   end
 
   private

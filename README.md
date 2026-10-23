@@ -221,9 +221,13 @@ bin/rails open_themes:apply
 bin/rails tailwindcss:build
 ```
 
-**Variant fallback**: If you specify a variant that doesn't exist in the new theme, `open_themes:apply` will warn and use the theme's default variant instead of failing.
+**Variant handling**: If you specify a variant that doesn't exist in the new theme:
+- **Multi-variant themes** (e.g., catppuccin): Error lists available variants
+- **Single-variant themes** (e.g., nord): Warns and uses default variant
 
 The Tailwind entrypoint stays unchanged — only token values in `open_themes.css` are updated, then Tailwind rebuilds utilities with new colors.
+
+**Note**: `@import "tailwindcss" prefix(...)` is not supported with bundled components (the `@apply` directives would need the prefix).
 
 #### Components (Tailwind-compatible)
 

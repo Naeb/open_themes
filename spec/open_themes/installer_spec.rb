@@ -75,7 +75,7 @@ RSpec.describe OpenThemes::Installer do
     end
   end
 
-  it "falls back to default variant when requested variant does not exist" do
+  it "falls back to default variant for single-variant themes" do
     Dir.mktmpdir do |dir|
       OpenThemes.configure do |config|
         config.theme = :nord
@@ -88,6 +88,23 @@ RSpec.describe OpenThemes::Installer do
         expect(theme.id).to eq("nord")
         expect(theme.variant).to be_nil
       end.to output(/Warning: Variant 'nonexistent' not found/).to_stderr
+    end
+  end
+
+  it "raises clear error with available variants for multi-variant themes" do
+    Dir.mktmpdir do |dir|
+      OpenThemes.configure do |config|
+        config.theme = :catppuccin
+        config.variant = :mocah
+        config.adapter = nil
+      end
+
+      expect do
+        described_class.apply!(root: dir)
+      end.to raise_error(
+        OpenThemes::Catalog::NotFound,
+        /Variant 'mocah' not found for catppuccin\. Available: frappe, latte, macchiato, mocha/
+      )
     end
   end
 end

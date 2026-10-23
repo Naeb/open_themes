@@ -27,10 +27,37 @@ module OpenThemes
     def resolve_theme_with_fallback
       OpenThemes.find(@config.theme, variant: @config.variant)
     rescue OpenThemes::Catalog::NotFound => e
-      # If variant not found, try default variant
-      raise unless @config.variant && e.message.include?("not found")
+      handle_variant_not_found(e)
+    end
 
-      warn "Warning: Variant '#{@config.variant}' not found in theme '#{@config.theme}'. Using default variant."
+    def handle_variant_not_found(error)
+      return raise error unless @config.variant
+
+      variants = available_variants_for_theme
+      return raise error if variants.nil? # Theme doesn't exist
+
+      if variants.any?
+        raise_variant_error(variants)
+      else
+        fallback_to_default_variant
+      end
+    end
+
+    def available_variants_for_theme
+      catalog = OpenThemes::Catalog.new
+      available_themes = catalog.all.select { |t| t.id == @config.theme.to_s }
+      return nil if available_themes.empty?
+
+      available_themes.map(&:variant).compact.sort
+    end
+
+    def raise_variant_error(variants)
+      raise OpenThemes::Catalog::NotFound,
+            "Variant '#{@config.variant}' not found for #{@config.theme}. Available: #{variants.join(", ")}"
+    end
+
+    def fallback_to_default_variant
+      warn "Warning: Variant '#{@config.variant}' not found. Using default variant."
       OpenThemes.find(@config.theme)
     end
 

@@ -67,7 +67,10 @@ module OpenThemes
         return nil unless File.exist?(initializer_path)
 
         content = File.read(initializer_path)
-        content =~ /config\.adapter\s*=\s*:(\w+)/ ? ::Regexp.last_match(1) : nil
+        # Match config.adapter or c.adapter = :symbol or "string", ignore commented lines
+        # Handles both multi-line (config.adapter) and inline (|c| c.adapter) forms
+        match = content.match(/^(?!.*#).*(config|c)\.adapter\s*=\s*[:"']?(\w+)/)
+        match ? match[2] : nil
       end
 
       def effective_adapter

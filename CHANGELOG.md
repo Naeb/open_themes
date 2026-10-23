@@ -6,11 +6,11 @@
 
 - **BREAKING BUG FIX**: Renamed internal `class_names` helper to `ot_merge_classes` (private) to prevent overriding Rails native `ActionView::Helpers::TagHelper#class_names`. The gem was breaking views that use `class_names("a", {"b" => true, "c" => false})` by converting hashes to strings instead of filtering truthy values. Public helpers (`ui_button`, `ui_card`) unchanged.
 - Generator now reads adapter from existing initializer when `--adapter` flag is omitted, preventing accidental mode switches on re-run
-- `open_themes:apply` no longer fails when switching to a theme without the previously configured variant; warns and uses default variant instead
+- `open_themes:apply` raises clear error listing available variants for multi-variant themes when requested variant doesn't exist; single-variant themes fall back to default with warning
 - Generator usage hint now includes `--adapter tailwind` in Tailwind mode for accurate re-run commands
-- Generator now raises `Thor::Error` instead of `exit(1)` for invalid adapter, allowing proper error handling
+- Generator now raises `Thor::Error` for invalid adapter, allowing proper error handling
 - Focus ring offset in Tailwind components now uses `focus-visible:ring-offset-background` (matches theme background, no white halo on dark themes)
-- Entrypoint insertion regex now handles `@import "tailwindcss" source(...) prefix(...)` and avoids double blank lines
+- Entrypoint insertion regex now handles `@import "tailwindcss" source(none);` (note: `prefix(...)` is not supported with bundled components)
 
 ### Added
 

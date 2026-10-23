@@ -209,6 +209,7 @@ Edit `config/initializers/open_themes.rb`:
 ```ruby
 OpenThemes.configure do |config|
   config.theme = :nord  # Changed from :catppuccin
+  config.variant = nil  # nord has no variants
   config.adapter = :tailwind
 end
 ```
@@ -219,6 +220,8 @@ Then regenerate and rebuild:
 bin/rails open_themes:apply
 bin/rails tailwindcss:build
 ```
+
+**Variant fallback**: If you specify a variant that doesn't exist in the new theme, `open_themes:apply` will warn and use the theme's default variant instead of failing.
 
 The Tailwind entrypoint stays unchanged — only token values in `open_themes.css` are updated, then Tailwind rebuilds utilities with new colors.
 

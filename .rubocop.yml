@@ -5,7 +5,6 @@ AllCops:
   Exclude:
     - "bin/**/*"
     - "vendor/**/*"
-    - "lib/generators/**/*"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
@@ -22,23 +21,19 @@ Metrics/BlockLength:
     - "open_themes.gemspec"
 
 Metrics/ClassLength:
-  Max: 100
+  Exclude:
+    - "lib/generators/open_themes/install/install_generator.rb"
 
 Metrics/MethodLength:
-  Max: 15
   Exclude:
     - "spec/**/*"
+    - "lib/generators/open_themes/install/install_generator.rb"
+    - "lib/open_themes/helpers.rb"
+    - "lib/open_themes/exporters/json.rb"
 
 Metrics/AbcSize:
-  Max: 20
   Exclude:
     - "spec/**/*"
-
-Metrics/PerceivedComplexity:
-  Max: 8
-
-Metrics/BlockNesting:
-  Max: 3
 
 Metrics/CyclomaticComplexity:
   Max: 10

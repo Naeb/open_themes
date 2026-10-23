@@ -74,4 +74,20 @@ RSpec.describe OpenThemes::Installer do
       expect(File).not_to exist(File.join(dir, "app/assets/stylesheets/open_themes/foundation.css"))
     end
   end
+
+  it "falls back to default variant when requested variant does not exist" do
+    Dir.mktmpdir do |dir|
+      OpenThemes.configure do |config|
+        config.theme = :nord
+        config.variant = :nonexistent
+        config.adapter = nil
+      end
+
+      expect do
+        theme = described_class.apply!(root: dir)
+        expect(theme.id).to eq("nord")
+        expect(theme.variant).to be_nil
+      end.to output(/Warning: Variant 'nonexistent' not found/).to_stderr
+    end
+  end
 end

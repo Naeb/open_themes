@@ -117,6 +117,18 @@ RSpec.describe OpenThemes::Generators::InstallGenerator do
       content = read_file("app/assets/tailwind/open_themes.css")
       expect(content).not_to include(".ot-btn")
     end
+
+    it "handles tailwind import with source() and prefix() args" do
+      create_tailwind_entrypoint('@import "tailwindcss" source(none) prefix(tw-);')
+
+      run_generator(["nord", "--adapter", "tailwind"])
+
+      app_css = read_file("app/assets/tailwind/application.css")
+      expect(app_css).to include('@import "tailwindcss" source(none) prefix(tw-);')
+      expect(app_css).to include("/* OpenThemes:begin */")
+      expect(app_css).to include('@import "./open_themes.css";')
+      expect(app_css).not_to match(/\n\n\n/)
+    end
   end
 
   describe "standard adapter behavior" do
@@ -166,10 +178,27 @@ RSpec.describe OpenThemes::Generators::InstallGenerator do
   end
 
   describe "validation" do
-    it "exits with non-zero status for invalid adapter" do
+    it "raises Thor::Error for invalid adapter" do
       expect do
-        run_generator(["nord", "--adapter", "invalid"], allow_exit: true)
-      end.to raise_error(SystemExit)
+        run_generator(["nord", "--adapter=invalid"])
+      end.to raise_error(Thor::Error, /Unknown adapter/)
+    end
+  end
+
+  describe "adapter persistence" do
+    it "reads adapter from existing initializer when not passed" do
+      create_tailwind_entrypoint
+
+      # First install with tailwind adapter
+      run_generator(["catppuccin", "mocha", "--adapter", "tailwind"])
+
+      # Re-run without --adapter flag; should read from initializer
+      run_generator(["nord", "--force"])
+
+      # Should have generated tailwind CSS
+      tailwind_css = read_file("app/assets/tailwind/open_themes.css")
+      expect(tailwind_css).to include("@theme inline")
+      expect(tailwind_css).to include("Nord")
     end
   end
 

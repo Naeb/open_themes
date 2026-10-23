@@ -19,9 +19,19 @@ module OpenThemes
     end
 
     def apply!
-      theme = OpenThemes.find(@config.theme, variant: @config.variant)
+      theme = resolve_theme_with_fallback
       write_stylesheets(theme)
       theme
+    end
+
+    def resolve_theme_with_fallback
+      OpenThemes.find(@config.theme, variant: @config.variant)
+    rescue OpenThemes::Catalog::NotFound => e
+      # If variant not found, try default variant
+      raise unless @config.variant && e.message.include?("not found")
+
+      warn "Warning: Variant '#{@config.variant}' not found in theme '#{@config.theme}'. Using default variant."
+      OpenThemes.find(@config.theme)
     end
 
     def import_lines

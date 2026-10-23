@@ -44,7 +44,9 @@ module OpenThemes
         say "  1. Edit config/initializers/open_themes.rb"
         say "  2. Run: bin/rails open_themes:apply"
         say ""
-        say "Or re-run: bin/rails generate open_themes:install nord --force"
+
+        adapter_flag = tailwind_mode? ? " --adapter tailwind" : ""
+        say "Or re-run: bin/rails generate open_themes:install nord#{adapter_flag} --force"
         return unless options[:components] && !tailwind_mode?
 
         say "Reference helpers: <%= ui_button \"Save\", variant: :primary %>"
@@ -53,12 +55,27 @@ module OpenThemes
       private
 
       def setup_and_validate
+        @resolved_adapter = resolve_adapter_from_initializer
         sync_configuration_from_options
         validate_adapter_option!
       end
 
+      def resolve_adapter_from_initializer
+        return options[:adapter] if options[:adapter]
+
+        initializer_path = File.join(destination_root, "config/initializers/open_themes.rb")
+        return nil unless File.exist?(initializer_path)
+
+        content = File.read(initializer_path)
+        content =~ /config\.adapter\s*=\s*:(\w+)/ ? ::Regexp.last_match(1) : nil
+      end
+
+      def effective_adapter
+        @resolved_adapter || options[:adapter]&.to_s
+      end
+
       def tailwind_mode?
-        options[:adapter]&.to_s == "tailwind"
+        effective_adapter == "tailwind"
       end
 
       def print_success_message(theme)
@@ -99,14 +116,13 @@ module OpenThemes
       end
 
       def validate_adapter_option!
-        adapter = options[:adapter]&.to_s
+        adapter = effective_adapter
         return if adapter.nil? || adapter.empty?
 
         valid_adapters = %w[bootstrap tailwind]
         return if valid_adapters.include?(adapter)
 
-        say "Unknown adapter: '#{adapter}'. Valid options: #{valid_adapters.join(", ")}", :red
-        exit(1)
+        raise Thor::Error, "Unknown adapter: '#{adapter}'. Valid options: #{valid_adapters.join(", ")}"
       end
 
       def sync_configuration_from_options
@@ -115,13 +131,13 @@ module OpenThemes
           config.variant = blank_to_nil(variant)
           config.foundation = options[:foundation]
           config.components = options[:components]
-          config.adapter = blank_to_nil(options[:adapter])
+          config.adapter = blank_to_nil(effective_adapter)
         end
       end
 
       def build_initializer_content
         variant_ruby = ruby_value(blank_to_nil(variant))
-        adapter_ruby = ruby_value(blank_to_nil(options[:adapter]))
+        adapter_ruby = ruby_value(blank_to_nil(effective_adapter))
 
         <<~RUBY
           # frozen_string_literal: true
@@ -186,8 +202,9 @@ module OpenThemes
       end
 
       def insert_new_block(content, block)
-        if content.match?(/^\s*@import\s+["']tailwindcss["'];?\s*$/m)
-          content.sub(/^(\s*@import\s+["']tailwindcss["'];?\s*)$/m, "\\1\n\n#{block}\n")
+        # Match @import "tailwindcss" with optional trailing args like source(none) or prefix(...)
+        if content.match?(/^\s*@import\s+["']tailwindcss["'](?:\s+[^;]+)?;?\s*$/m)
+          content.sub(/^(\s*@import\s+["']tailwindcss["'](?:\s+[^;]+)?;?\s*)$/m, "\\1\n#{block}\n")
         else
           "#{block}\n\n#{content}"
         end

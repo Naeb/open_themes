@@ -233,6 +233,22 @@ RSpec.describe OpenThemes::Generators::InstallGenerator do
       expect(File).to exist(File.join(destination_root, "app/assets/stylesheets/open_themes/theme.css"))
       expect(File).not_to exist(File.join(destination_root, "app/assets/tailwind/open_themes.css"))
     end
+
+    it "reads adapter with trailing comment" do
+      create_tailwind_entrypoint
+
+      # Create initializer directory and file with trailing comment
+      FileUtils.mkdir_p(File.join(destination_root, "config/initializers"))
+      File.write(
+        File.join(destination_root, "config/initializers/open_themes.rb"),
+        "OpenThemes.configure { |c| c.adapter = :tailwind # use tailwind }"
+      )
+
+      run_generator(["nord", "--force"])
+
+      tailwind_css = read_file("app/assets/tailwind/open_themes.css")
+      expect(tailwind_css).to include("@theme inline")
+    end
   end
 
   private
